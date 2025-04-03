@@ -20,11 +20,11 @@ public class Context {
     public static final double PERCEPTION_RADIUS = 50.0;
     public static final double AVOID_RADIUS = 20.0;
 
-    public static final GraphicsDevice gd = GraphicsEnvironment
+    /*public static final GraphicsDevice gd = GraphicsEnvironment
             .getLocalGraphicsEnvironment()
             .getDefaultScreenDevice();
     public static final int SCREEN_WIDTH = (int)(gd.getDisplayMode().getWidth() / 1.75);
-    public static final int SCREEN_HEIGHT = (int)(gd.getDisplayMode().getHeight() / 2.0);
+    public static final int SCREEN_HEIGHT = (int)(gd.getDisplayMode().getHeight() / 2.0);*/
 
     // Suppresses default constructor, ensuring non-instantiability.
     private Context() {}

@@ -10,7 +10,6 @@ import pcd.ass01.common.gui.impl.BoidsView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 import static pcd.ass01.common.Context.DYNAMIC_CORE_NUMBER;
 import static pcd.ass01.common.Context.FRAMERATE;
@@ -71,14 +70,16 @@ public class BoidsSimulatorImpl implements BoidsSimulator {
         int baseSize = boidCount / threadsNumber;
         int extra = boidCount % threadsNumber;
 
-        IntStream.range(0, threadsNumber).forEach(i -> {
+        for(int i = 0; i < threadsNumber; i++) {
             int start = i * baseSize + Math.min(i, extra);
             int end = start + baseSize + (i < extra ? 1 : 0);
             var subList = boids.subList(start, end);
             this.boidsUpdaters.add(new BoidsUpdater(subList,
                     model, velBarrier, printBarrier, simulationMonitor));
-        });
-        this.boidsUpdaters.forEach(Thread::start);
+        }
+        for(Thread t : boidsUpdaters) {
+            t.start();
+        }
     }
 
     private void runSimulation() {
@@ -86,7 +87,7 @@ public class BoidsSimulatorImpl implements BoidsSimulator {
 
         while (running) {
             switch (simulationMonitor.getState()) {
-                case RUNNING -> {
+                case RUNNING:
                     var t0 = System.currentTimeMillis();
                     try {
                         printBarrier.hitAndWaitAll();
@@ -109,15 +110,17 @@ public class BoidsSimulatorImpl implements BoidsSimulator {
                             framerate = (int) (1000 / dtElapsed);
                         }
                     });
-                }
-                case PAUSED -> {
+                    break;
+                case PAUSED:
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         this.stopSimulation();
                     }
-                }
-                case STOPPED -> this.stopSimulation();
+                    break;
+                case STOPPED:
+                    this.stopSimulation();
+                    break;
             }
         }
     }

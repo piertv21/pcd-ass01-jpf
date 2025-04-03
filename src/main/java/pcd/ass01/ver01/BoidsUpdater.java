@@ -34,21 +34,27 @@ public class BoidsUpdater extends Thread {
     public void run() {
         while (running) {
             switch (monitor.getState()) {
-                case RUNNING -> {
+                case RUNNING:
                     awaitBarrier(printBarrier);
-                    boids.forEach(boid -> boid.updateVelocity(model));
+                    for(Boid boid : boids) {
+                        boid.updateVelocity(model);
+                    }
                     awaitBarrier(velBarrier);
-                    boids.forEach(boid -> boid.updatePos(model));
+                    for(Boid boid : boids) {
+                        boid.updatePos(model);
+                    }
                     awaitBarrier(printBarrier);
-                }
-                case PAUSED -> {
+                    break;
+                case PAUSED:
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         running = false;
                     }
-                }
-                case STOPPED -> running = false;
+                    break;
+                case STOPPED:
+                    running = false;
+                    break;
             }
         }
     }

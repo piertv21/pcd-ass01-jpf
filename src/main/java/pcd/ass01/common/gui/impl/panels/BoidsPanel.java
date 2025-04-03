@@ -1,5 +1,6 @@
 package pcd.ass01.common.gui.impl.panels;
 
+import pcd.ass01.common.boids.Boid;
 import pcd.ass01.common.boids.BoidsModel;
 import pcd.ass01.common.gui.api.View;
 
@@ -36,13 +37,13 @@ public class BoidsPanel extends JPanel {
         var boids = model.getBoids();
 
         g.setColor(Color.BLUE);
-        boids.forEach(boid -> {
+        for(Boid boid : boids) {
             var x = boid.getPos().x();
             var y = boid.getPos().y();
-            int px = (int)(w/2 + x*xScale);
-            int py = (int)(h/2 - y*xScale);
-            g.fillOval(px,py, 5, 5);
-        });
+            int px = (int) (w / 2 + x * xScale);
+            int py = (int) (h / 2 - y * xScale);
+            g.fillOval(px, py, 5, 5);
+        }
 
         g.setColor(Color.BLACK);
         g.drawString("Num. Boids: " + boids.size(), 10, 25);

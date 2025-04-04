@@ -1,6 +1,7 @@
 package pcd.ass01.common.barrier;
 
 import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -15,7 +16,7 @@ public class CustomCyclicBarrier implements CyclicBarrier {
     private int nArrivedSoFar;
     private int barrierGeneration;
     private boolean isBroken;
-    private final ReentrantLock lock;
+    private final Lock lock;
     private final Condition condition;
 
     public CustomCyclicBarrier(int nTotal) {
@@ -29,8 +30,8 @@ public class CustomCyclicBarrier implements CyclicBarrier {
 
     @Override
     public void hitAndWaitAll() throws InterruptedException {
-        lock.lock();
         try {
+            lock.lock();
             int generation = this.barrierGeneration;
             this.nArrivedSoFar++;
 
@@ -51,8 +52,8 @@ public class CustomCyclicBarrier implements CyclicBarrier {
 
     @Override
     public void breakBarrier() {
-        lock.lock();
         try {
+            lock.lock();
             this.isBroken = true;
             condition.signalAll();
         } finally {

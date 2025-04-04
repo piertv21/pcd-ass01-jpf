@@ -17,6 +17,6 @@ public class Main {
         BoidsSimulator sim = new BoidsSimulatorImpl(model);
         //var view = new BoidsView("Multi-threaded version", model, sim, SCREEN_WIDTH, SCREEN_HEIGHT);
         //sim.attachView(view);
-        sim.startSimulation(1500); // Choosen as it's the default one
+        sim.startSimulation(3);
     }
 }

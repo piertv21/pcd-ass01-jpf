@@ -32,8 +32,31 @@ public class BoidsUpdater extends Thread {
 
     @Override
     public void run() {
-        while (running) {
-            switch (monitor.getState()) {
+        while (!this.isInterrupted()) {
+            if(monitor.getState() == SimulationMonitor.State.RUNNING) {
+                try {
+                    printBarrier.hitAndWaitAll();
+                } catch (InterruptedException e) {
+                    break;
+                }
+                /*for(Boid boid : boids) {
+                    boid.updateVelocity(model);
+                }*/
+                try {
+                    velBarrier.hitAndWaitAll();
+                } catch (InterruptedException e) {
+                    break;
+                }
+                /*for(Boid boid : boids) {
+                    boid.updatePos(model);
+                }*/
+                try {
+                    printBarrier.hitAndWaitAll();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+            /*switch (monitor.getState()) {
                 case RUNNING:
                     awaitBarrier(printBarrier);
                     for(Boid boid : boids) {
@@ -55,7 +78,7 @@ public class BoidsUpdater extends Thread {
                 case STOPPED:
                     running = false;
                     break;
-            }
+            }*/
         }
     }
 

@@ -54,8 +54,8 @@ public class BoidsSimulatorImpl implements BoidsSimulator {
     public void stopSimulation() {
         this.simulationMonitor.stop();
         this.running = false;
-        this.velBarrier.breakBarrier();
-        this.printBarrier.breakBarrier();
+        //this.velBarrier.breakBarrier();
+        //this.printBarrier.breakBarrier();
         this.boidsUpdaters.clear();
     }
 
@@ -85,8 +85,16 @@ public class BoidsSimulatorImpl implements BoidsSimulator {
     private void runSimulation() {
         this.setupBoidsUpdatersAndBarriers();
 
-        while (running) {
-            switch (simulationMonitor.getState()) {
+        for(int i = 0; i < 3; i++) {
+            if(simulationMonitor.getState() == SimulationMonitor.State.RUNNING) {
+                try {
+                    printBarrier.hitAndWaitAll();
+                    printBarrier.hitAndWaitAll();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+            /*switch (simulationMonitor.getState()) {
                 case RUNNING:
                     var t0 = System.currentTimeMillis();
                     try {
@@ -121,7 +129,9 @@ public class BoidsSimulatorImpl implements BoidsSimulator {
                 case STOPPED:
                     this.stopSimulation();
                     break;
-            }
+            }*/
         }
+        this.boidsUpdaters.forEach(Thread::interrupt);
+        this.stopSimulation();
     }
 }

@@ -1,18 +1,18 @@
 package pcd.ass01.ver01;
 
+import pcd.ass01.common.boids.BoidsModel;
+import pcd.ass01.common.boids.BoidsSimulator;
 import pcd.ass01.common.SimulationMonitor;
 import pcd.ass01.common.barrier.CustomCyclicBarrier;
 import pcd.ass01.common.barrier.CyclicBarrier;
-import pcd.ass01.common.boids.BoidsModel;
-import pcd.ass01.common.boids.BoidsSimulator;
 import pcd.ass01.common.gui.impl.BoidsView;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
-import static pcd.ass01.common.Context.DYNAMIC_CORE_NUMBER;
-import static pcd.ass01.common.Context.FRAMERATE;
+import static pcd.ass01.common.Context.*;
 
 public class BoidsSimulatorImpl implements BoidsSimulator {
 
@@ -20,7 +20,6 @@ public class BoidsSimulatorImpl implements BoidsSimulator {
     private final BoidsModel model;
     private Optional<BoidsView> view;
     private int framerate;
-    private boolean running;
 
     private final List<Thread> boidsUpdaters;
     private CyclicBarrier velBarrier, printBarrier;
@@ -41,8 +40,7 @@ public class BoidsSimulatorImpl implements BoidsSimulator {
     public void startSimulation(int boidCount) {
         this.model.startSimulation(boidCount);
         this.simulationMonitor.start();
-        this.running = true;
-        this.runSimulation();
+        new Thread(this::runSimulation).start();
     }
 
     @Override
@@ -53,9 +51,7 @@ public class BoidsSimulatorImpl implements BoidsSimulator {
     @Override
     public void stopSimulation() {
         this.simulationMonitor.stop();
-        this.running = false;
-        //this.velBarrier.breakBarrier();
-        //this.printBarrier.breakBarrier();
+        this.boidsUpdaters.forEach(Thread::interrupt);
         this.boidsUpdaters.clear();
     }
 
@@ -70,68 +66,51 @@ public class BoidsSimulatorImpl implements BoidsSimulator {
         int baseSize = boidCount / threadsNumber;
         int extra = boidCount % threadsNumber;
 
-        for(int i = 0; i < threadsNumber; i++) {
+        IntStream.range(0, threadsNumber).forEach(i -> {
             int start = i * baseSize + Math.min(i, extra);
             int end = start + baseSize + (i < extra ? 1 : 0);
             var subList = boids.subList(start, end);
             this.boidsUpdaters.add(new BoidsUpdater(subList,
-                    model, velBarrier, printBarrier, simulationMonitor));
-        }
-        for(Thread t : boidsUpdaters) {
-            t.start();
-        }
+                    model, velBarrier, printBarrier));
+        });
+        this.boidsUpdaters.forEach(Thread::start);
     }
 
     private void runSimulation() {
         this.setupBoidsUpdatersAndBarriers();
 
-        for(int i = 0; i < 3; i++) {
-            if(simulationMonitor.getState() == SimulationMonitor.State.RUNNING) {
-                try {
-                    printBarrier.hitAndWaitAll();
-                    printBarrier.hitAndWaitAll();
-                } catch (InterruptedException e) {
-                    break;
-                }
+        for(int i = 0; i < 2; i++) {
+            System.out.println("Iterazione " + i);
+            //var t0 = System.currentTimeMillis();
+            try {
+                printBarrier.hitAndWaitAll();
+                printBarrier.hitAndWaitAll();
+            } catch (InterruptedException e) {
+                this.stopSimulation();
             }
-            /*switch (simulationMonitor.getState()) {
-                case RUNNING:
-                    var t0 = System.currentTimeMillis();
-                    try {
-                        printBarrier.hitAndWaitAll();
-                        printBarrier.hitAndWaitAll();
-                    } catch (InterruptedException e) {
-                        running = false;
-                    }
-                    view.ifPresent(v -> {
-                        v.update(framerate);
-                        var t1 = System.currentTimeMillis();
-                        var dtElapsed = t1 - t0;
-                        var frameRatePeriod = 1000 / FRAMERATE;
+            /*view.ifPresent(v -> {
+                v.update(framerate);
+                var t1 = System.currentTimeMillis();
+                var dtElapsed = t1 - t0;
+                var frameRatePeriod = 1000 / FRAMERATE;
 
-                        if (dtElapsed < frameRatePeriod) {
-                            try {
-                                Thread.sleep(frameRatePeriod - dtElapsed);
-                            } catch (Exception ex) {}
-                            framerate = FRAMERATE;
-                        } else {
-                            framerate = (int) (1000 / dtElapsed);
-                        }
-                    });
-                    break;
-                case PAUSED:
+                if (dtElapsed < frameRatePeriod) {
                     try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        this.stopSimulation();
-                    }
-                    break;
-                case STOPPED:
+                        Thread.sleep(frameRatePeriod - dtElapsed);
+                    } catch (Exception ex) {}
+                    framerate = FRAMERATE;
+                } else {
+                    framerate = (int) (1000 / dtElapsed);
+                }
+            });
+            if(simulationMonitor.getState() == SimulationMonitor.State.PAUSED) {
+                try {
+                    simulationMonitor.waitIfPaused();
+                } catch (InterruptedException e) {
                     this.stopSimulation();
-                    break;
+                }
             }*/
         }
-        this.boidsUpdaters.forEach(Thread::interrupt);
         this.stopSimulation();
     }
 }

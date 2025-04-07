@@ -26,7 +26,7 @@ public class BoidsUpdater extends Thread {
 
     @Override
     public void run() {
-        while (!this.isInterrupted()) {
+        while (true) {
             if (!awaitBarrier(printBarrier)) break;
             //boids.forEach(boid -> boid.updateVelocity(model));
             if (!awaitBarrier(velBarrier)) break;

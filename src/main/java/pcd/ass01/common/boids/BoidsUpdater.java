@@ -1,8 +1,6 @@
-package pcd.ass01.ver01;
+package pcd.ass01.common.boids;
 
-import pcd.ass01.common.boids.BoidsModel;
 import pcd.ass01.common.barrier.CyclicBarrier;
-import pcd.ass01.common.boids.Boid;
 
 import java.util.List;
 

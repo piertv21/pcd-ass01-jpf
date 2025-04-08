@@ -1,56 +1,37 @@
 package pcd.ass01.ver01;
 
+import pcd.ass01.common.boids.AbstractBoidsSimulator;
 import pcd.ass01.common.boids.BoidsModel;
-import pcd.ass01.common.boids.BoidsSimulator;
 import pcd.ass01.common.SimulationMonitor;
 import pcd.ass01.common.barrier.CustomCyclicBarrier;
 import pcd.ass01.common.barrier.CyclicBarrier;
-import pcd.ass01.common.gui.impl.BoidsView;
+import pcd.ass01.common.boids.BoidsUpdater;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static pcd.ass01.common.Context.*;
 
-public class BoidsSimulatorImpl implements BoidsSimulator {
-
-    private final SimulationMonitor simulationMonitor;
-    private final BoidsModel model;
-    private Optional<BoidsView> view;
-    private int framerate;
+public class BoidsSimulatorImpl extends AbstractBoidsSimulator {
 
     private final List<Thread> boidsUpdaters;
     private CyclicBarrier velBarrier, printBarrier;
 
     public BoidsSimulatorImpl(BoidsModel model) {
-        this.simulationMonitor = new SimulationMonitor();
-        this.model = model;
-        this.view = Optional.empty();
+        super(model);
         this.boidsUpdaters = new ArrayList<>();
     }
 
     @Override
-    public void attachView(BoidsView view) {
-        this.view = Optional.of(view);
-    }
-
-    @Override
     public void startSimulation(int boidCount) {
-        this.model.startSimulation(boidCount);
-        this.simulationMonitor.start();
+        super.startSimulation(boidCount);
         new Thread(this::runSimulation).start();
     }
 
     @Override
-    public void pauseSimulation() {
-        this.simulationMonitor.togglePause();
-    }
-
-    @Override
     public void stopSimulation() {
-        this.simulationMonitor.stop();
+        super.stopSimulation();
         this.boidsUpdaters.forEach(Thread::interrupt);
         this.boidsUpdaters.clear();
     }

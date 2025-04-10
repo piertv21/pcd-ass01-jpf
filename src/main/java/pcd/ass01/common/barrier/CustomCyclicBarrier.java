@@ -49,15 +49,4 @@ public class CustomCyclicBarrier implements CyclicBarrier {
             lock.unlock();
         }
     }
-
-    @Override
-    public void breakBarrier() {
-        try {
-            lock.lock();
-            this.isBroken = true;
-            condition.signalAll();
-        } finally {
-            lock.unlock();
-        }
-    }
 }

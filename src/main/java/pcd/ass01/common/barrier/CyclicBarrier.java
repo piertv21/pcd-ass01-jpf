@@ -7,6 +7,4 @@ public interface CyclicBarrier {
 
     void hitAndWaitAll() throws InterruptedException;
 
-    void breakBarrier();
-
 }

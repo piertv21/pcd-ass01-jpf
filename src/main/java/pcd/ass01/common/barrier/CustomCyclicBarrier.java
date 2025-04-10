@@ -15,7 +15,6 @@ public class CustomCyclicBarrier implements CyclicBarrier {
     private final int nTotal;
     private int nArrivedSoFar;
     private int barrierGeneration;
-    private boolean isBroken;
     private final Lock lock;
     private final Condition condition;
 
@@ -23,7 +22,6 @@ public class CustomCyclicBarrier implements CyclicBarrier {
         this.nTotal = nTotal;
         this.nArrivedSoFar = 0;
         this.barrierGeneration = 0;
-        this.isBroken = false;
         this.lock = new ReentrantLock();
         this.condition = lock.newCondition();
     }
@@ -41,7 +39,7 @@ public class CustomCyclicBarrier implements CyclicBarrier {
                 condition.signalAll();
             } else {
                 while (this.nArrivedSoFar < this.nTotal &&
-                        this.barrierGeneration == generation && !isBroken) {
+                        this.barrierGeneration == generation) {
                     condition.await();
                 }
             }
